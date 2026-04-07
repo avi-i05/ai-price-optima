@@ -43,7 +43,7 @@ const PricingOptimizer = ({ products }) => {
         requestData.product_id = parseInt(selectedProduct);
       }
 
-      const response = await axios.post('http://localhost:8001/api/pricing/optimize', requestData);
+      const response = await axios.post('https://ai-price-optima-pldz.onrender.com/api/pricing/optimize', requestData);
       
       setResult(response.data);
     } catch (error) {

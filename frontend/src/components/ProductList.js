@@ -9,7 +9,7 @@ const ProductList = ({ products, onRefresh }) => {
   const handleOptimizePrice = async (product) => {
     setLoading(true);
     try {
-      const response = await axios.post('http://localhost:8001/api/pricing/optimize', {
+      const response = await axios.post('https://ai-price-optima-pldz.onrender.com/api/pricing/optimize', {
         product_id: product.id,
         current_price: product.current_price,
         inventory: product.inventory,

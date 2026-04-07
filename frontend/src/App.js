@@ -17,7 +17,7 @@ function App() {
 
   const fetchProducts = async () => {
     try {
-      const response = await axios.get('http://localhost:8001/api/products');
+      const response = await axios.get('https://ai-price-optima-pldz.onrender.com/api/products');
       setProducts(response.data);
     } catch (error) {
       console.error('Error fetching products:', error);
@@ -26,7 +26,7 @@ function App() {
 
   const fetchAnalytics = async () => {
     try {
-      const response = await axios.get('http://localhost:8001/api/analytics/dashboard');
+      const response = await axios.get('https://ai-price-optima-pldz.onrender.com/api/analytics/dashboard');
       setAnalytics(response.data);
     } catch (error) {
       console.error('Error fetching analytics:', error);
