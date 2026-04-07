@@ -12,7 +12,7 @@ app = FastAPI(title="AI PriceOptima API", version="1.0.0")
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # React frontend
+    allow_origins=["https://ai-price-optima-navy.vercel.app"],  # React frontend
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
