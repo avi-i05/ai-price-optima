@@ -2,12 +2,10 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Optional
-import pandas as pd
-import numpy as np
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.preprocessing import StandardScaler
-import joblib
 import os
+import random
+import math
+import datetime
 
 app = FastAPI(title="AI PriceOptima API", version="1.0.0")
 
@@ -167,32 +165,8 @@ async def get_product(product_id: int):
         raise HTTPException(status_code=404, detail="Product not found")
     return product
 
-# Load the trained model
-model = None
-scaler = None
-
-try:
-    # Load the trained model
-    model = joblib.load("model.pkl")
-    print("Trained model loaded successfully")
-    
-    # Try to load scaler if it exists, otherwise create a simple one
-    try:
-        scaler = joblib.load("scaler.pkl")
-        print("Scaler loaded successfully")
-    except FileNotFoundError:
-        # Create a simple scaler for basic normalization
-        from sklearn.preprocessing import StandardScaler
-        scaler = StandardScaler()
-        # Fit with some sample data (this is just for initialization)
-        sample_data = np.array([[100, 50, 0.5, 95], [200, 100, 0.7, 180], [50, 25, 0.3, 48]])
-        scaler.fit(sample_data)
-        print("Created default scaler")
-        
-except FileNotFoundError:
-    print("Model file not found, using fallback optimization logic")
-    model = None
-    scaler = None
+# Pure Python pricing optimization (no ML dependencies)
+print("Using pure Python pricing optimization algorithm")
 
 @app.post("/api/pricing/optimize", response_model=PricingResponse)
 async def optimize_pricing(request: PricingRequest):
@@ -217,104 +191,144 @@ async def optimize_pricing(request: PricingRequest):
     
     base_price = request.current_price
     
-    if model:
-        # Use trained model for prediction
-        try:
-            # Prepare features for the model based on your dataset structure
-            if request.custom_product:
-                print(f"Preparing features for custom product: {request.custom_product.name}")
-            else:
-                print(f"Preparing features for product_id: {request.product_id}")
-            
-            features = prepare_features(request, base_price)
-            print(f"Features prepared: {len(features)} features")
-            print("=== FEATURE DATA SENT TO MODEL ===")
-            print(f"Raw features array: {features}")
-            print(f"Features shape: {features.shape}")
-            print(f"Features dtype: {features.dtype}")
-            
-            # Display features by category
-            print("\n--- FEATURE BREAKDOWN ---")
-            print(f"Core Business Metrics (7): {features[:7]}")
-            print(f"Time Features (4): {features[7:11]}")
-            print(f"Store Encodings (4): {features[11:15]}")
-            print(f"Category Encodings (5): {features[15:20]}")
-            print(f"Region Encodings (4): {features[20:24]}")
-            print(f"Weather Encodings (4): {features[24:28]}")
-            print(f"Season Encodings (4): {features[28:32]}")
-            print(f"Holiday Flag (1): {features[32:33]}")
-            print(f"Derived Ratios (3): {features[33:36]}")
-            print("===============================\n")
-            
-            # Reshape for single prediction
-            features = features.reshape(1, -1)
-            print(f"Reshaped for prediction: {features.shape}")
-            
-            # Predict optimal price
-            print("Making prediction with XGBoost model...")
-            optimal_price = model.predict(features)[0]
-            print(f"Model raw prediction: {optimal_price}")
-            print(f"Model prediction type: {type(optimal_price)}")
-            
-            # Ensure price is reasonable and positive
-            # First, ensure positive price
-            if optimal_price <= 0:
-                optimal_price = base_price * 0.9  # Default to 10% discount if negative
-                print(f"Negative prediction detected, using fallback: {optimal_price}")
-            
-            # Then, ensure reasonable change limits
-            max_change = 0.3  # Maximum 30% change
-            if optimal_price > base_price * (1 + max_change):
-                optimal_price = base_price * (1 + max_change)
-                print(f"Price capped at maximum increase: {optimal_price}")
-            elif optimal_price < base_price * (1 - max_change):
-                optimal_price = base_price * (1 - max_change)
-                print(f"Price capped at maximum decrease: {optimal_price}")
-            
-            # Dynamic confidence score based on prediction characteristics
-            price_change = abs(optimal_price - base_price) / base_price
-            
-            # Higher confidence for smaller price changes, lower for dramatic changes
-            if price_change < 0.05:  # Less than 5% change
-                confidence_score = 0.95
-            elif price_change < 0.10:  # Less than 10% change
-                confidence_score = 0.90
-            elif price_change < 0.20:  # Less than 20% change
-                confidence_score = 0.80
-            else:  # More than 20% change
-                confidence_score = 0.70
-            
-            # Adjust confidence based on inventory levels
-            if request.inventory < 10 or request.inventory > 200:
-                confidence_score -= 0.05  # Lower confidence for extreme inventory
-            
-            # Adjust confidence based on demand factor
-            if 0.3 <= request.demand_factor <= 0.7:  # Normal demand range
-                confidence_score += 0.02
-            elif request.demand_factor < 0.1 or request.demand_factor > 0.9:  # Extreme demand
-                confidence_score -= 0.08
-            
-            # Ensure confidence stays within reasonable bounds
-            confidence_score = max(0.50, min(0.98, confidence_score))
-            
-            reasoning = f"ML model prediction based on historical data patterns (price change: {price_change*100:.1f}%)"
-            
-        except Exception as e:
-            print(f"Model prediction failed: {e}")
-            # Fallback to simple logic
-            optimal_price, confidence_score, reasoning = fallback_optimization(request)
-    else:
-        # Fallback optimization logic
-        optimal_price, confidence_score, reasoning = fallback_optimization(request)
+    # Use pure Python pricing optimization
+    print("Using pure Python pricing optimization algorithm")
     
-    price_change_percentage = ((optimal_price - base_price) / base_price) * 100
+    # Calculate optimal price using rule-based logic
+    optimal_price = calculate_optimal_price_pure_python(request, base_price)
+    print(f"Pure Python optimization result: {optimal_price}")
     
-    return PricingResponse(
-        optimal_price=round(optimal_price, 2),
-        confidence_score=round(confidence_score, 2),
-        price_change_percentage=round(price_change_percentage, 2),
-        reasoning=reasoning
-    )
+    # Calculate confidence score and reasoning
+    confidence_score, reasoning = calculate_confidence_and_reasoning(request, base_price, optimal_price)
+    
+    return {
+        "optimal_price": optimal_price,
+        "confidence_score": confidence_score,
+        "price_change_percentage": ((optimal_price - base_price) / base_price) * 100,
+        "reasoning": reasoning
+    }
+
+def calculate_optimal_price_pure_python(request: PricingRequest, base_price: float) -> float:
+    """Pure Python pricing optimization algorithm based on business rules"""
+    
+    # Start with base price
+    optimal_price = base_price
+    
+    # Demand-based adjustments
+    if request.demand_factor > 0.7:  # High demand
+        optimal_price *= 1.15  # Increase by 15%
+    elif request.demand_factor < 0.3:  # Low demand
+        optimal_price *= 0.85  # Decrease by 15%
+    
+    # Inventory-based adjustments
+    if request.inventory > 100:  # High inventory
+        optimal_price *= 0.9  # Decrease by 10%
+    elif request.inventory < 20:  # Low inventory
+        optimal_price *= 1.1  # Increase by 10%
+    
+    # Seasonal adjustments
+    seasonal_multipliers = {
+        'Summer': 1.1,
+        'Winter': 0.9,
+        'Spring': 1.05,
+        'Autumn': 0.95
+    }
+    if request.season in seasonal_multipliers:
+        optimal_price *= seasonal_multipliers[request.season]
+    
+    # Weather adjustments
+    weather_multipliers = {
+        'Sunny': 1.05,
+        'Cloudy': 1.0,
+        'Rainy': 0.95,
+        'Snowy': 0.9
+    }
+    if request.weather in weather_multipliers:
+        optimal_price *= weather_multipliers[request.weather]
+    
+    # Holiday premium
+    if request.holiday:
+        optimal_price *= 1.1  # 10% holiday premium
+    
+    # Competitor price consideration
+    if request.competitor_price and request.competitor_price > 0:
+        if optimal_price > request.competitor_price * 1.1:
+            optimal_price = request.competitor_price * 1.05  # Stay competitive
+        elif optimal_price < request.competitor_price * 0.9:
+            optimal_price = request.competitor_price * 0.95  # Don't underprice too much
+    
+    # Apply discount
+    if request.discount and request.discount > 0:
+        optimal_price *= (1 - request.discount / 100)
+    
+    # Visitor-based adjustments
+    if request.visitors:
+        if request.visitors > 100:  # High traffic
+            optimal_price *= 1.05
+        elif request.visitors < 30:  # Low traffic
+            optimal_price *= 0.95
+    
+    # Ensure reasonable price limits (max ±30% change)
+    max_change = 0.3
+    if optimal_price > base_price * (1 + max_change):
+        optimal_price = base_price * (1 + max_change)
+    elif optimal_price < base_price * (1 - max_change):
+        optimal_price = base_price * (1 - max_change)
+    
+    return round(optimal_price, 2)
+
+def calculate_confidence_and_reasoning(request: PricingRequest, base_price: float, optimal_price: float) -> tuple:
+    """Calculate confidence score and reasoning for the price recommendation"""
+    
+    confidence_score = 0.8  # Base confidence
+    reasoning_parts = []
+    
+    # Demand factor impact
+    if request.demand_factor > 0.7:
+        confidence_score += 0.1
+        reasoning_parts.append("High demand supports price increase")
+    elif request.demand_factor < 0.3:
+        confidence_score += 0.05
+        reasoning_parts.append("Low demand justifies price decrease")
+    
+    # Inventory impact
+    if request.inventory > 100:
+        reasoning_parts.append(f"High inventory ({request.inventory} units) supports competitive pricing")
+    elif request.inventory < 20:
+        reasoning_parts.append(f"Low inventory ({request.inventory} units) supports premium pricing")
+    
+    # Seasonal impact
+    if request.season:
+        reasoning_parts.append(f"{request.season} season factor applied")
+    
+    # Weather impact
+    if request.weather:
+        reasoning_parts.append(f"{request.weather} weather condition considered")
+    
+    # Holiday impact
+    if request.holiday:
+        confidence_score += 0.05
+        reasoning_parts.append("Holiday period supports premium pricing")
+    
+    # Competitor pricing
+    if request.competitor_price:
+        reasoning_parts.append(f"Competitor price ${request.competitor_price:.2f} considered")
+    
+    # Price change magnitude
+    price_change = abs(optimal_price - base_price) / base_price
+    if price_change > 0.2:
+        confidence_score -= 0.1
+        reasoning_parts.append("Large price change reduces confidence")
+    elif price_change < 0.05:
+        confidence_score += 0.05
+        reasoning_parts.append("Conservative price adjustment")
+    
+    # Ensure confidence stays within bounds
+    confidence_score = max(0.3, min(0.95, confidence_score))
+    
+    reasoning = " | ".join(reasoning_parts) if reasoning_parts else "Standard pricing optimization"
+    
+    return round(confidence_score, 2), reasoning
 
 def prepare_features(request: PricingRequest, base_price: float):
     """
