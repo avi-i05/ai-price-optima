@@ -1,5 +1,5 @@
 import React from 'react';
-import { TrendingUp, Package, DollarSign, Users } from 'lucide-react';
+import { TrendingUp, Package, DollarSign } from 'lucide-react';
 
 const Dashboard = ({ analytics }) => {
   const stats = [
