@@ -52,14 +52,14 @@ const ProductList = ({ products, onRefresh }) => {
                   <h3 className="text-lg font-semibold text-gray-900">{product.name}</h3>
                   <div className="mt-2 space-y-1">
                     <p className="text-sm text-gray-600">
-                      Current Price: <span className="font-medium text-gray-900">${product.current_price}</span>
+                      Current Price: <span className="font-medium text-gray-900">₹{product.current_price}</span>
                     </p>
                     <p className="text-sm text-gray-600">
                       Inventory: <span className="font-medium text-gray-900">{product.inventory} units</span>
                     </p>
                     {product.competitor_price && (
                       <p className="text-sm text-gray-600">
-                        Competitor Price: <span className="font-medium text-gray-900">${product.competitor_price}</span>
+                        Competitor Price: <span className="font-medium text-gray-900">₹{product.competitor_price}</span>
                       </p>
                     )}
                   </div>
@@ -97,7 +97,7 @@ const ProductList = ({ products, onRefresh }) => {
                   {selectedProduct.sales_history.map((price, index) => (
                     <div key={index} className="flex justify-between text-sm">
                       <span className="text-gray-600">Period {index + 1}</span>
-                      <span className="font-medium">${price}</span>
+                      <span className="font-medium">₹{price}</span>
                     </div>
                   ))}
                 </div>
@@ -110,7 +110,7 @@ const ProductList = ({ products, onRefresh }) => {
                     <div className="flex justify-between">
                       <span className="text-gray-600">Optimal Price:</span>
                       <span className="font-semibold text-green-600">
-                        ${selectedProduct.optimization.optimal_price}
+                        ₹{selectedProduct.optimization.optimal_price}
                       </span>
                     </div>
                     <div className="flex justify-between">

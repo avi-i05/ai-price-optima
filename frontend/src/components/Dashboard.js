@@ -19,7 +19,7 @@ const Dashboard = ({ analytics }) => {
     },
     {
       title: 'Average Price',
-      value: `$${analytics.average_price?.toFixed(2) || '0.00'}`,
+      value: `₹${analytics.average_price?.toFixed(2) || '0.00'}`,
       icon: DollarSign,
       color: 'bg-yellow-500',
       bgColor: 'bg-yellow-100'

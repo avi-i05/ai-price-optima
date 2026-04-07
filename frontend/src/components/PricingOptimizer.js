@@ -150,7 +150,7 @@ const PricingOptimizer = ({ products }) => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Current Price ($)
+                Current Price (₹)
               </label>
               <input
                 type="number"
@@ -197,7 +197,7 @@ const PricingOptimizer = ({ products }) => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Competitor Price ($)
+                Competitor Price (₹)
               </label>
               <input
                 type="number"
@@ -319,7 +319,7 @@ const PricingOptimizer = ({ products }) => {
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-gray-700 font-medium">Optimal Price:</span>
                   <span className="text-2xl font-bold text-green-600">
-                    ${result.optimal_price}
+                    ₹{result.optimal_price}
                   </span>
                 </div>
                 
